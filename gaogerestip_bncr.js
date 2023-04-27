@@ -6,7 +6,7 @@
  * @description 重拨高格路由器
  * @rule ^重拨$
  * @priority 1000
- * @admin false
+ * @admin true
  * @public false
  * @disable false
  */
@@ -42,7 +42,7 @@ async function getCSRFTokenAndTimestamp(url) {
 async function loginAndGetCookie(url, csrfToken, timestamp) {
     const data = querystring.stringify({
       userName: 'admin',
-      password: 'wocaonima',
+      password: 'wocaonima',  //填入你自己的账户密码
       timestamp: timestamp,
       csrftoken: csrfToken,
       newwebui: 'yes',
@@ -94,20 +94,6 @@ async function loginAndGetCookie(url, csrfToken, timestamp) {
       console.log('请求失败:', error);
     }
   }
-  
-  (async () => {
-    const csrfUrl = 'http://192.168.3.1/cgi-bin/webui/admin';
-    const loginUrl = 'http://192.168.3.1/cgi-bin/webui/admin';
-    const reconnectUrl = 'http://192.168.3.1/cgi-bin/webui/admin/network/iface_reconnect/wan3';
-  
-    const { csrfToken, timestamp } = await getCSRFTokenAndTimestamp(csrfUrl);
-    if (csrfToken && timestamp) {
-      const cookie = await loginAndGetCookie(loginUrl, csrfToken, timestamp);
-      if (cookie) {
-        await sendReconnectRequest(reconnectUrl, cookie);
-      }
-    }
-  })();
 
 module.exports = async (s) => {
   const csrfUrl = 'http://192.168.3.1/cgi-bin/webui/admin';
