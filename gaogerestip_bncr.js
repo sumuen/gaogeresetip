@@ -1,7 +1,19 @@
+/**
+ * @author muzi
+ * @name 高格重拨  
+ * @origin muzi
+ * @version 1.1.0
+ * @description 重拨高格路由器
+ * @rule ^重拨$
+ * @priority 1000
+ * @admin false
+ * @public false
+ * @disable false
+ */
+// 导入依赖
 const cheerio = require('cheerio');
 const axios = require('axios');
 const querystring = require('querystring');
-
 // 获取CSRF令牌和时间戳
 async function getCSRFTokenAndTimestamp(url) {
     try {
@@ -96,3 +108,27 @@ async function loginAndGetCookie(url, csrfToken, timestamp) {
       }
     }
   })();
+
+module.exports = async (s) => {
+  const csrfUrl = 'http://192.168.3.1/cgi-bin/webui/admin';
+  const loginUrl = 'http://192.168.3.1/cgi-bin/webui/admin';
+  const reconnectUrl = 'http://192.168.3.1/cgi-bin/webui/admin/network/iface_reconnect/wan3';
+
+  try {
+    const { csrfToken, timestamp } = await getCSRFTokenAndTimestamp(csrfUrl);
+    if (csrfToken && timestamp) {
+      const cookie = await loginAndGetCookie(loginUrl, csrfToken, timestamp);
+      if (cookie) {
+        await sendReconnectRequest(reconnectUrl, cookie);
+        await s.reply('重拨成功');
+      } else {
+        await s.reply('重拨失败: 登录失败');
+      }
+    } else {
+      await s.reply('重拨失败: 未找到CSRF令牌或时间戳');
+    }
+  } catch (error) {
+    console.error('重拨出现错误:', error);
+    await s.reply('重拨失败: 出现错误');
+  }
+};
